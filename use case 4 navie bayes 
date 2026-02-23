@@ -1,0 +1,45 @@
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Sample dataset
+# Features: [email_length, num_special_chars, capital_letter_ratio]
+X = np.array([
+    [100, 5, 0.1],
+    [200, 20, 0.4],
+    [150, 10, 0.2],
+    [300, 25, 0.5],
+    [120, 3, 0.05],
+    [250, 30, 0.6],
+    [130, 2, 0.07],
+    [270, 28, 0.55]
+])
+
+# Labels: 1 = Spam, 0 = Not Spam
+y = np.array([0, 1, 0, 1, 0, 1, 0, 1])
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+
+# Create Gaussian Naive Bayes model
+model = GaussianNB()
+
+# Train model
+model.fit(X_train, y_train)
+
+# Predict
+predictions = model.predict(X_test)
+
+# Accuracy
+accuracy = accuracy_score(y_test, predictions)
+
+print("Predictions:", predictions)
+print("Actual:", y_test)
+print("Accuracy:", accuracy * 100, "%")
+
+# Confusion matrix
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, predictions))
