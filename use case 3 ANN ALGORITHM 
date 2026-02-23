@@ -1,0 +1,70 @@
+import numpy as np
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+
+# Load MNIST dataset
+mnist = fetch_openml('mnist_784')
+X = mnist.data / 255.0
+y = mnist.target.astype(int)
+
+# One-hot encoding
+encoder = OneHotEncoder(sparse=False)
+y = encoder.fit_transform(y.values.reshape(-1,1))
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Network architecture
+input_size = 784
+hidden_size = 128
+output_size = 10
+learning_rate = 0.01
+epochs = 10
+
+# Initialize weights
+W1 = np.random.randn(input_size, hidden_size) * 0.01
+b1 = np.zeros((1, hidden_size))
+W2 = np.random.randn(hidden_size, output_size) * 0.01
+b2 = np.zeros((1, output_size))
+
+# Activation functions
+def relu(Z):
+    return np.maximum(0, Z)
+
+def relu_derivative(Z):
+    return Z > 0
+
+def softmax(Z):
+    expZ = np.exp(Z - np.max(Z))
+    return expZ / expZ.sum(axis=1, keepdims=True)
+
+# Training
+for epoch in range(epochs):
+
+    # Forward propagation
+    Z1 = np.dot(X_train, W1) + b1
+    A1 = relu(Z1)
+    Z2 = np.dot(A1, W2) + b2
+    A2 = softmax(Z2)
+
+    # Backpropagation
+    dZ2 = A2 - y_train
+    dW2 = np.dot(A1.T, dZ2) / X_train.shape[0]
+    db2 = np.sum(dZ2, axis=0, keepdims=True) / X_train.shape[0]
+
+    dA1 = np.dot(dZ2, W2.T)
+    dZ1 = dA1 * relu_derivative(Z1)
+    dW1 = np.dot(X_train.T, dZ1) / X_train.shape[0]
+    db1 = np.sum(dZ1, axis=0, keepdims=True) / X_train.shape[0]
+
+    # Update weights
+    W2 -= learning_rate * dW2
+    b2 -= learning_rate * db2
+    W1 -= learning_rate * dW1
+    b1 -= learning_rate * db1
+
+    print(f"Epoch {epoch+1} completed")
+
+print("Training finished")
